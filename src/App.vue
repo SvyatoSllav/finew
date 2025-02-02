@@ -2,7 +2,7 @@
 </script>
 
 <template>
-  <h1 class="header__title">Hello world</h1>
+  <h1 class="header__title">FineW app</h1>
 </template>
 
 <style scoped lang="scss">
