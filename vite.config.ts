@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
       vue(),
       VitePWA({
-          includeAssets: ['vite.svg', 'vite.svg', 'vite.svg'],
+          includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
           manifest: {
               name: 'FineW',
               short_name: 'FineW',
@@ -15,14 +15,14 @@ export default defineConfig({
               theme_color: '#ffffff',
               icons: [
                   {
-                      src: 'vite.svg',
+                      src: 'web-app-manifest-192x192.png',
                       sizes: '192x192',
-                      type: 'image/svg'
+                      type: 'image/png'
                   },
                   {
-                      src: 'vite.svg',
+                      src: 'web-app-manifest-512x512.png',
                       sizes: '512x512',
-                      type: 'image/svg'
+                      type: 'image/png'
                   }
               ]
           }
