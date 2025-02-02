@@ -2,15 +2,18 @@
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+    { "path": "./tsconfig.node.json" },
   ],
-  "compilerOptions": {
-    "baseUrl": "src",
-    "paths": {
-      "@/*": ["*"],
-      "@components/*": ["src/components/*"],
-      "@assets/*": ["src/assets/*"]
-    }
-  },
-  "include": ["src/**/*"]
+//  "compilerOptions": {
+//    "baseUrl": "src",
+//    "paths": {
+//      "@/*": ["*"],
+//      "@components/*": ["src/components/*"],
+//      "@assets/*": ["src/assets/*"]
+//    },
+//    "composite": true,
+//    "noEmit": true,
+//  },
+//  "include": ["src/**/*"],
+//  "exclude": ["node_modules", "**/*.spec.ts"],
 }
