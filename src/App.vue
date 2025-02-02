@@ -1,8 +1,9 @@
 <script setup lang="ts">
+
 </script>
 
 <template>
-  <h1 class="header__title">FineW app</h1>
+    <router-view />
 </template>
 
 <style scoped lang="scss">
