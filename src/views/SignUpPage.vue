@@ -41,8 +41,8 @@ const signUp = async () => {
                 shared_with: [result.user.uid],
             }).then((result) => {
                 categoriesToCreate.forEach(category => {
-                    addDoc(collection(db, 'category'), {
-                        budget: `/collection/${result.id}`,
+                    addDoc(collection(db, 'categories'), {
+                        budget_id: result.id,
                         category_name: category.category_name,
                         currency: category.currency,
                         purchases: [],
