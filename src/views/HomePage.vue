@@ -12,10 +12,10 @@
 import { ref, onMounted } from 'vue';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'vue-router';
-import {useFirebaseAuth} from "vuefire";
+import {useCurrentUser, useFirebaseAuth} from "vuefire";
 
 const auth = useFirebaseAuth()
-const user = ref(auth.currentUser);
+const user = useCurrentUser();
 const router = useRouter();
 
 onMounted(() => {

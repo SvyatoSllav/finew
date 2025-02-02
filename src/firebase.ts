@@ -1,5 +1,4 @@
-import { initializeApp, auth } from "firebase/app";
-import {useFirebaseAuth} from "vuefire";
+import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -9,5 +8,6 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
 
 export const firebaseApp = initializeApp(firebaseConfig);

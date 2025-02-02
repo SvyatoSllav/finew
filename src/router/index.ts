@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '@/views/HomePage.vue';
 import LoginPage from '@/views/LoginPage.vue';
 import SignUpPage from '@/views/SignUpPage.vue';
-import {useFirebaseAuth} from "vuefire";
+import {useCurrentUser, useFirebaseAuth} from "vuefire";
 
 
 const routes = [
@@ -18,9 +18,8 @@ const router = createRouter({
 
 // Navigation guard to protect routes
 router.beforeEach((to, from, next) => {
-    const auth = useFirebaseAuth()
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-    const isAuthenticated = auth.currentUser;
+    const isAuthenticated = useCurrentUser();
 
     if (requiresAuth && !isAuthenticated) {
         next('/login');
