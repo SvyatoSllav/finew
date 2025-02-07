@@ -5,14 +5,7 @@ import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, './src'),
-            '@assets': path.resolve(__dirname, './src/assets'),
-            '@components': path.resolve(__dirname, './src/components'),
-        },
-    },
-  plugins: [
+    plugins: [
       vue(),
       VitePWA({
           includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
@@ -35,5 +28,13 @@ export default defineConfig({
               ]
           }
       }),
-  ],
+    ],
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, './src'),
+            '@assets': path.resolve(__dirname, './src/assets'),
+            '@components': path.resolve(__dirname, './src/components'),
+        },
+    },
+    assetsInclude: ['**/*.woff', '**/*.woff2', '**/*.ttf',],
 })

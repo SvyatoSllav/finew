@@ -1,13 +1,16 @@
 <template>
+  <div class="login">
     <div>
-        <h1>Login</h1>
-        <form @submit.prevent="login">
-            <input v-model="email" type="email" placeholder="Email" required />
-            <input v-model="password" type="password" placeholder="Password" required />
-            <button type="submit">Login</button>
-        </form>
-        <p>Don't have an account? <router-link to="/signup">Sign Up</router-link></p>
+      <h1 class="login__title">Логин</h1>
+      <h3 class="login__advice">Войдите в свой аккаунт</h3>
+      <form @submit.prevent="login" class="login__form">
+          <InputField v-model="email" type="email" placeholder="Введите вашу почту" label="Почта" required />
+          <InputField v-model="password" type="password" placeholder="Введите ваш пароль" required label="Пароль" />
+          <Button buttonText="Войти" type="submit"/>
+      </form>
+      <p class="login__sign-up-text">Нет аккаунта? <router-link to="/signup"><span class="login__sign-up-text_accent">Зарегистрируйтесь</span></router-link></p>
     </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -15,6 +18,8 @@ import { ref } from 'vue';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'vue-router';
 import {useFirebaseAuth} from "vuefire";
+import InputField from "../Components/InputField.vue";
+import Button from "../Components/Button.vue";
 
 const auth = useFirebaseAuth()
 const email = ref('');
@@ -31,3 +36,54 @@ const login = async () => {
     }
 };
 </script>
+
+<style lang="scss" scoped>
+.login {
+  padding: 48px 24px;
+  max-width: 568px;
+  margin: 0 auto;
+  &__title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
+    letter-spacing: 0.09px;
+    margin-bottom: 44px;
+  }
+  &__advice {
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 32px;
+    letter-spacing: 0.13px;
+  }
+  &__advice-subtitle {
+    color: #78828A;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 22px;
+    letter-spacing: 0.065px;
+  }
+  &__form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 56px;
+    gap: 12px;
+    &__submit-btn {
+      margin-top: 20px;
+    }
+  }
+  &__sign-up-text {
+    color: #8E8E8E;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0.08px;
+    text-align: center;
+
+    &_accent {
+      text-decoration: none;
+      color: #2B7979;
+    }
+  }
+}
+</style>
