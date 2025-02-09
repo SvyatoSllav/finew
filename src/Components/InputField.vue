@@ -1,11 +1,11 @@
 <template>
   <div class="input-wrapper">
-    <label class="input-wrapper__label" v-if="props.label">{{ props.label }}</label>
-    <input class="input-wrapper__input-field" v-model="model" :type="props.type" :placeholder="props.placeholder"/>
+    <label v-if="props.label" class="input-wrapper__label">{{ props.label }}</label>
+    <input v-model="model" :placeholder="props.placeholder" :type="props.type" class="input-wrapper__input-field"/>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 const model = defineModel()
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
   type?: string;
   placeholder?: string;
 }
+
 const props = withDefaults(defineProps<Props>(), {
   label: '',
   placeholder: '',
@@ -21,7 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .input-wrapper {
   display: flex;
   flex-direction: column;
@@ -37,7 +38,9 @@ const props = withDefaults(defineProps<Props>(), {
   &__input-field {
     padding: 16px;
     border-radius: 20px;
-    border: 1px solid #ECF1F6;
+    background-color: #fff;
+    border: none;
+    outline: none;
 
     &::placeholder {
       color: #78828A;

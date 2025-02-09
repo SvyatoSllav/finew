@@ -1,8 +1,8 @@
 <template>
-  <button class="button">{{props.buttonText}}</button>
+  <button class="button">{{ props.buttonText }}</button>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 interface Props {
   buttonText: string;
 }
@@ -11,8 +11,7 @@ const props = defineProps<Props>()
 </script>
 
 
-
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .button {
   width: 100%;
   padding: 12px;
@@ -22,6 +21,7 @@ const props = defineProps<Props>()
   line-height: 24px;
   letter-spacing: 0.08px;
   border-radius: 16px;
-  background: #105D38;
+  background: #F16F33;
+  border: none;
 }
 </style>
