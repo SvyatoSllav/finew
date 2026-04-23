@@ -1,0 +1,582 @@
+{
+  "database": "finew",
+  "version": "2.0",
+  "last_updated": "2026-04-23",
+  "changes": [
+    "Removed default_budget_id from users table (eliminated circular dependency)",
+    "Removed member_ids from budgets table (redundant with budget_members)",
+    "Added validation for transaction-category-budget consistency"
+  ],
+  "tables": {
+    "users": {
+      "description": "User accounts with authentication",
+      "fields": {
+        "id": {
+          "type": "BIGINT",
+          "primary_key": true,
+          "auto_increment": true,
+          "description": "Internal user ID"
+        },
+        "uid": {
+          "type": "UUID",
+          "nullable": false,
+          "unique": true,
+          "description": "Public user UUID for API responses"
+        },
+        "email": {
+          "type": "VARCHAR(254)",
+          "nullable": false,
+          "unique": true,
+          "description": "User email address (used as username)"
+        },
+        "password": {
+          "type": "VARCHAR(128)",
+          "nullable": true,
+          "description": "Hashed password (nullable for OAuth users)"
+        },
+        "display_name": {
+          "type": "VARCHAR(255)",
+          "nullable": false,
+          "description": "User's display name"
+        },
+        "avatar_url": {
+          "type": "VARCHAR(200)",
+          "nullable": true,
+          "description": "URL to user's avatar image"
+        },
+        "auth_provider": {
+          "type": "VARCHAR(20)",
+          "nullable": false,
+          "choices": ["email", "google"],
+          "description": "Authentication provider"
+        },
+        "provider_uid": {
+          "type": "VARCHAR(255)",
+          "nullable": true,
+          "description": "UID from OAuth provider (Google sub)"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "nullable": false,
+          "auto_now_add": true,
+          "description": "Account creation timestamp"
+        }
+      },
+      "indexes": [
+        {
+          "name": "idx_email",
+          "fields": ["email"],
+          "unique": true
+        },
+        {
+          "name": "idx_uid",
+          "fields": ["uid"],
+          "unique": true
+        }
+      ],
+      "removed_fields": {
+        "default_budget_id": {
+          "reason": "Circular dependency with budgets table",
+          "solution": "Frontend queries first budget with role='owner'"
+        }
+      }
+    },
+    "budgets": {
+      "description": "Budget containers for tracking expenses/income",
+      "fields": {
+        "id": {
+          "type": "UUID",
+          "primary_key": true,
+          "description": "Budget UUID"
+        },
+        "name": {
+          "type": "VARCHAR(255)",
+          "nullable": false,
+          "description": "Budget name"
+        },
+        "currency": {
+          "type": "VARCHAR(3)",
+          "nullable": false,
+          "default": "RUB",
+          "description": "Currency code (ISO 4217)"
+        },
+        "author_id": {
+          "type": "BIGINT",
+          "nullable": false,
+          "foreign_key": {
+            "table": "users",
+            "field": "id",
+            "on_delete": "CASCADE"
+          },
+          "description": "User who created the budget"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "nullable": false,
+          "auto_now_add": true,
+          "description": "Budget creation timestamp"
+        },
+        "updated_at": {
+          "type": "TIMESTAMP",
+          "nullable": false,
+          "auto_now": true,
+          "description": "Last update timestamp"
+        }
+      },
+      "indexes": [
+        {
+          "name": "idx_author",
+          "fields": ["author_id"]
+        }
+      ],
+      "relationships": {
+        "members": {
+          "type": "many_to_many",
+          "through": "budget_members",
+          "description": "Users who have access to this budget"
+        },
+        "categories": {
+          "type": "one_to_many",
+          "related_table": "categories",
+          "description": "Categories in this budget"
+        },
+        "transactions": {
+          "type": "one_to_many",
+          "related_table": "transactions",
+          "description": "Transactions in this budget"
+        }
+      },
+      "removed_fields": {
+        "member_ids": {
+          "reason": "Redundant with budget_members through table",
+          "solution": "Query budget_members table for all budget members"
+        }
+      }
+    },
+    "budget_members": {
+      "description": "Many-to-many relationship between budgets and users with roles",
+      "fields": {
+        "id": {
+          "type": "BIGINT",
+          "primary_key": true,
+          "auto_increment": true,
+          "description": "Internal ID"
+        },
+        "budget_id": {
+          "type": "UUID",
+          "nullable": false,
+          "foreign_key": {
+            "table": "budgets",
+            "field": "id",
+            "on_delete": "CASCADE"
+          },
+          "description": "Budget reference"
+        },
+        "user_id": {
+          "type": "BIGINT",
+          "nullable": false,
+          "foreign_key": {
+            "table": "users",
+            "field": "id",
+            "on_delete": "CASCADE"
+          },
+          "description": "User reference"
+        },
+        "role": {
+          "type": "VARCHAR(20)",
+          "nullable": false,
+          "choices": ["owner", "editor", "viewer"],
+          "description": "User's role in the budget"
+        },
+        "joined_at": {
+          "type": "TIMESTAMP",
+          "nullable": false,
+          "auto_now_add": true,
+          "description": "When user joined the budget"
+        }
+      },
+      "constraints": [
+        {
+          "type": "unique",
+          "fields": ["budget_id", "user_id"],
+          "description": "User can only be a member of a budget once"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_budget_user",
+          "fields": ["budget_id", "user_id"],
+          "unique": true
+        },
+        {
+          "name": "idx_user_budgets",
+          "fields": ["user_id"]
+        }
+      ]
+    },
+    "budget_invites": {
+      "description": "Invite codes for sharing budgets",
+      "fields": {
+        "id": {
+          "type": "UUID",
+          "primary_key": true,
+          "description": "Invite UUID"
+        },
+        "budget_id": {
+          "type": "UUID",
+          "nullable": false,
+          "foreign_key": {
+            "table": "budgets",
+            "field": "id",
+            "on_delete": "CASCADE"
+          },
+          "description": "Budget being shared"
+        },
+        "invited_by_id": {
+          "type": "BIGINT",
+          "nullable": false,
+          "foreign_key": {
+            "table": "users",
+            "field": "id",
+            "on_delete": "SET_NULL"
+          },
+          "description": "User who created the invite"
+        },
+        "code": {
+          "type": "VARCHAR(32)",
+          "nullable": false,
+          "unique": true,
+          "description": "Short invite code for sharing"
+        },
+        "expires_at": {
+          "type": "TIMESTAMP",
+          "nullable": false,
+          "description": "When the invite expires (default: 7 days)"
+        },
+        "used_by_id": {
+          "type": "BIGINT",
+          "nullable": true,
+          "foreign_key": {
+            "table": "users",
+            "field": "id",
+            "on_delete": "SET_NULL"
+          },
+          "description": "User who used this invite (null if unused)"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "nullable": false,
+          "auto_now_add": true,
+          "description": "Invite creation timestamp"
+        }
+      },
+      "indexes": [
+        {
+          "name": "idx_code",
+          "fields": ["code"],
+          "unique": true
+        },
+        {
+          "name": "idx_budget_invites",
+          "fields": ["budget_id"]
+        }
+      ]
+    },
+    "categories": {
+      "description": "Expense/income categories within budgets",
+      "fields": {
+        "id": {
+          "type": "UUID",
+          "primary_key": true,
+          "description": "Category UUID"
+        },
+        "budget_id": {
+          "type": "UUID",
+          "nullable": false,
+          "foreign_key": {
+            "table": "budgets",
+            "field": "id",
+            "on_delete": "CASCADE"
+          },
+          "description": "Budget this category belongs to"
+        },
+        "name": {
+          "type": "VARCHAR(255)",
+          "nullable": false,
+          "description": "Category name"
+        },
+        "icon_name": {
+          "type": "VARCHAR(100)",
+          "nullable": false,
+          "description": "Material Design icon name"
+        },
+        "color": {
+          "type": "VARCHAR(7)",
+          "nullable": false,
+          "default": "#000000",
+          "description": "Hex color code for UI"
+        },
+        "type": {
+          "type": "VARCHAR(10)",
+          "nullable": false,
+          "choices": ["expense", "income"],
+          "description": "Category type"
+        },
+        "sort_order": {
+          "type": "INTEGER",
+          "nullable": false,
+          "default": 0,
+          "description": "Display order in UI"
+        },
+        "is_archived": {
+          "type": "BOOLEAN",
+          "nullable": false,
+          "default": false,
+          "description": "Soft delete flag"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "nullable": false,
+          "auto_now_add": true,
+          "description": "Category creation timestamp"
+        },
+        "updated_at": {
+          "type": "TIMESTAMP",
+          "nullable": false,
+          "auto_now": true,
+          "description": "Last update timestamp"
+        }
+      },
+      "constraints": [
+        {
+          "type": "unique",
+          "fields": ["budget_id", "name"],
+          "description": "Category names must be unique within a budget"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_budget_categories",
+          "fields": ["budget_id"]
+        },
+        {
+          "name": "idx_budget_name",
+          "fields": ["budget_id", "name"],
+          "unique": true
+        }
+      ]
+    },
+    "transactions": {
+      "description": "Individual expense/income transactions",
+      "fields": {
+        "id": {
+          "type": "UUID",
+          "primary_key": true,
+          "description": "Transaction UUID"
+        },
+        "budget_id": {
+          "type": "UUID",
+          "nullable": false,
+          "foreign_key": {
+            "table": "budgets",
+            "field": "id",
+            "on_delete": "CASCADE"
+          },
+          "description": "Budget this transaction belongs to"
+        },
+        "category_id": {
+          "type": "UUID",
+          "nullable": true,
+          "foreign_key": {
+            "table": "categories",
+            "field": "id",
+            "on_delete": "SET_NULL"
+          },
+          "description": "Category (nullable for uncategorized)"
+        },
+        "user_id": {
+          "type": "BIGINT",
+          "nullable": true,
+          "foreign_key": {
+            "table": "users",
+            "field": "id",
+            "on_delete": "SET_NULL"
+          },
+          "description": "User who created this transaction"
+        },
+        "amount": {
+          "type": "DECIMAL(12, 2)",
+          "nullable": false,
+          "description": "Transaction amount (always positive)"
+        },
+        "type": {
+          "type": "VARCHAR(10)",
+          "nullable": false,
+          "choices": ["expense", "income"],
+          "description": "Transaction type"
+        },
+        "currency": {
+          "type": "VARCHAR(3)",
+          "nullable": false,
+          "default": "RUB",
+          "description": "Currency code (ISO 4217)"
+        },
+        "note": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "Optional transaction note"
+        },
+        "occurred_at": {
+          "type": "TIMESTAMP",
+          "nullable": false,
+          "description": "When the transaction actually happened"
+        },
+        "created_at": {
+          "type": "TIMESTAMP",
+          "nullable": false,
+          "auto_now_add": true,
+          "description": "Record creation timestamp"
+        },
+        "updated_at": {
+          "type": "TIMESTAMP",
+          "nullable": false,
+          "auto_now": true,
+          "description": "Last update timestamp"
+        }
+      },
+      "validation": {
+        "category_budget_consistency": {
+          "description": "Category must belong to the same budget as the transaction",
+          "implementation": [
+            "Model clean() method validates category.budget_id == transaction.budget_id",
+            "Serializer validate() method performs same check",
+            "Prevents data inconsistency at application level"
+          ]
+        }
+      },
+      "indexes": [
+        {
+          "name": "idx_occurred_at",
+          "fields": ["occurred_at"],
+          "order": "DESC",
+          "description": "Fast sorting by transaction date"
+        },
+        {
+          "name": "idx_budget_occurred",
+          "fields": ["budget_id", "occurred_at"],
+          "order": "DESC",
+          "description": "Fast queries for budget transactions"
+        },
+        {
+          "name": "idx_category_occurred",
+          "fields": ["category_id", "occurred_at"],
+          "order": "DESC",
+          "description": "Fast queries for category transactions"
+        }
+      ]
+    }
+  },
+  "default_data": {
+    "description": "Data automatically created on user registration",
+    "budget": {
+      "name": "Основной",
+      "currency": "RUB"
+    },
+    "categories": [
+      {
+        "name": "Продукты",
+        "icon_name": "shopping_basket",
+        "color": "#0f6667",
+        "type": "expense",
+        "sort_order": 0
+      },
+      {
+        "name": "Кафе",
+        "icon_name": "restaurant",
+        "color": "#a53c00",
+        "type": "expense",
+        "sort_order": 1
+      },
+      {
+        "name": "Досуг",
+        "icon_name": "movie",
+        "color": "#2563eb",
+        "type": "expense",
+        "sort_order": 2
+      },
+      {
+        "name": "Здоровье",
+        "icon_name": "medical_services",
+        "color": "#dc2626",
+        "type": "expense",
+        "sort_order": 3
+      },
+      {
+        "name": "Интернет",
+        "icon_name": "language",
+        "color": "#7c3aed",
+        "type": "expense",
+        "sort_order": 4
+      },
+      {
+        "name": "Электричество",
+        "icon_name": "bolt",
+        "color": "#a16207",
+        "type": "expense",
+        "sort_order": 5
+      },
+      {
+        "name": "Счета",
+        "icon_name": "receipt_long",
+        "color": "#57534e",
+        "type": "expense",
+        "sort_order": 6
+      }
+    ]
+  },
+  "api_endpoints": {
+    "base_url": "http://72.56.65.226:8001/api/",
+    "authentication": {
+      "register": "POST /auth/register/",
+      "login": "POST /auth/login/",
+      "google_auth": "POST /auth/google/",
+      "token_refresh": "POST /auth/token/refresh/",
+      "me": "GET /auth/me/",
+      "update_profile": "PATCH /auth/me/"
+    },
+    "budgets": {
+      "list": "GET /budgets/",
+      "create": "POST /budgets/",
+      "detail": "GET /budgets/{id}/",
+      "update": "PATCH /budgets/{id}/",
+      "delete": "DELETE /budgets/{id}/",
+      "members": "GET /budgets/{id}/members/",
+      "create_invite": "POST /budgets/{id}/invites/",
+      "join": "POST /budgets/join/"
+    },
+    "categories": {
+      "list": "GET /categories/?budget={id}",
+      "create": "POST /categories/",
+      "detail": "GET /categories/{id}/",
+      "update": "PATCH /categories/{id}/",
+      "delete": "DELETE /categories/{id}/"
+    },
+    "transactions": {
+      "list": "GET /transactions/?budget={id}",
+      "create": "POST /transactions/",
+      "detail": "GET /transactions/{id}/",
+      "update": "PATCH /transactions/{id}/",
+      "delete": "DELETE /transactions/{id}/"
+    }
+  },
+  "migrations": {
+    "0001_initial": {
+      "description": "Initial database schema with all models",
+      "created": "2026-04-23"
+    },
+    "0002_remove_user_default_budget": {
+      "description": "Remove default_budget field from User model",
+      "created": "2026-04-23"
+    }
+  }
+}
