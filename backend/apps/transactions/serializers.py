@@ -17,6 +17,15 @@ class TransactionSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
+    def validate(self, data):
+        """Validate that category belongs to the same budget"""
+        if data.get('category') and data.get('budget'):
+            if data['category'].budget_id != data['budget'].id:
+                raise serializers.ValidationError({
+                    'category': 'Category must belong to the same budget as the transaction'
+                })
+        return data
+
     def create(self, validated_data):
         # Set user from request
         validated_data['user'] = self.context['request'].user

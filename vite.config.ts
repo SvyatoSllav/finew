@@ -1,11 +1,13 @@
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
 import {VitePWA} from 'vite-plugin-pwa'
 import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
     plugins: [
+        tailwindcss(),
         vue({
             template: {
                 transformAssetUrls: {
@@ -21,7 +23,7 @@ export default defineConfig({
                 name: 'FineW',
                 short_name: 'FineW',
                 description: 'Finance control, finance watcher',
-                theme_color: '#ffffff',
+                theme_color: '#53621d',
                 icons: [
                     {
                         src: 'web-app-manifest-192x192.png',

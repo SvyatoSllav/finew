@@ -9,13 +9,8 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     display_name = models.CharField(max_length=255, blank=True)
     avatar_url = models.URLField(blank=True, null=True)
-    default_budget = models.ForeignKey(
-        'budgets.Budget',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='default_for_users'
-    )
+    # Removed default_budget to avoid circular dependency
+    # Frontend can determine default budget by querying budgets with role='owner'
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

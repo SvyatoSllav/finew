@@ -54,19 +54,15 @@ class RegisterView(generics.CreateAPIView):
             role='owner'
         )
 
-        # Set as default budget
-        user.default_budget = budget
-        user.save()
-
         # Create default categories
         default_categories = [
-            {'name': 'Продукты', 'icon_name': 'grocery'},
-            {'name': 'Кафе', 'icon_name': 'cafe'},
-            {'name': 'Досуг', 'icon_name': 'leisure'},
-            {'name': 'Здоровье', 'icon_name': 'healthcare'},
-            {'name': 'Интернет', 'icon_name': 'ethernet'},
-            {'name': 'Электричество', 'icon_name': 'electricity'},
-            {'name': 'Счета', 'icon_name': 'bills'},
+            {'name': 'Продукты', 'icon_name': 'shopping_basket', 'color': '#0f6667'},
+            {'name': 'Кафе', 'icon_name': 'restaurant', 'color': '#a53c00'},
+            {'name': 'Досуг', 'icon_name': 'movie', 'color': '#2563eb'},
+            {'name': 'Здоровье', 'icon_name': 'medical_services', 'color': '#dc2626'},
+            {'name': 'Интернет', 'icon_name': 'language', 'color': '#7c3aed'},
+            {'name': 'Электричество', 'icon_name': 'bolt', 'color': '#a16207'},
+            {'name': 'Счета', 'icon_name': 'receipt_long', 'color': '#57534e'},
         ]
 
         for i, cat_data in enumerate(default_categories):
@@ -74,6 +70,7 @@ class RegisterView(generics.CreateAPIView):
                 budget=budget,
                 name=cat_data['name'],
                 icon_name=cat_data['icon_name'],
+                color=cat_data['color'],
                 sort_order=i,
                 type='expense'
             )
@@ -120,11 +117,10 @@ class GoogleAuthView(generics.CreateAPIView):
         # Get or create user from Google token
         user = serializer.save()
 
-        # Create default budget if user is new
-        if not user.default_budget:
-            from apps.budgets.models import Budget
-            if not Budget.objects.filter(author=user).exists():
-                self._create_default_budget(user)
+        # Create default budget if user is new (check if user has any budgets as author)
+        from apps.budgets.models import Budget
+        if not Budget.objects.filter(author=user).exists():
+            self._create_default_budget(user)
 
         # Generate JWT tokens
         tokens = get_tokens_for_user(user)
@@ -153,19 +149,15 @@ class GoogleAuthView(generics.CreateAPIView):
             role='owner'
         )
 
-        # Set as default budget
-        user.default_budget = budget
-        user.save()
-
         # Create default categories
         default_categories = [
-            {'name': 'Продукты', 'icon_name': 'grocery'},
-            {'name': 'Кафе', 'icon_name': 'cafe'},
-            {'name': 'Досуг', 'icon_name': 'leisure'},
-            {'name': 'Здоровье', 'icon_name': 'healthcare'},
-            {'name': 'Интернет', 'icon_name': 'ethernet'},
-            {'name': 'Электричество', 'icon_name': 'electricity'},
-            {'name': 'Счета', 'icon_name': 'bills'},
+            {'name': 'Продукты', 'icon_name': 'shopping_basket', 'color': '#0f6667'},
+            {'name': 'Кафе', 'icon_name': 'restaurant', 'color': '#a53c00'},
+            {'name': 'Досуг', 'icon_name': 'movie', 'color': '#2563eb'},
+            {'name': 'Здоровье', 'icon_name': 'medical_services', 'color': '#dc2626'},
+            {'name': 'Интернет', 'icon_name': 'language', 'color': '#7c3aed'},
+            {'name': 'Электричество', 'icon_name': 'bolt', 'color': '#a16207'},
+            {'name': 'Счета', 'icon_name': 'receipt_long', 'color': '#57534e'},
         ]
 
         for i, cat_data in enumerate(default_categories):
@@ -173,6 +165,7 @@ class GoogleAuthView(generics.CreateAPIView):
                 budget=budget,
                 name=cat_data['name'],
                 icon_name=cat_data['icon_name'],
+                color=cat_data['color'],
                 sort_order=i,
                 type='expense'
             )
